@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Posts{% endblock %}</h1>
-
+<h1>{% block title %}Posts{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -10,44 +9,80 @@
   <div class="post-grid">
     <div class="row justify-content-center">
       {% for post in posts %}
-        <div class="col-md-4 mb-4 d-flex">
-          <article class="post border rounded p-3 flex-fill">
-            <header>
-              <div>
-                <h2>{{ post['title'] }}</h2>
-                <div class="about text-muted small">
-                  by <a href="{{ url_for('profile.user_profile', username=post['username']) }}">
-  {{ post['username'] }}
-</a> on {{ post['created'].strftime('%Y-%m-%d') }}
-                </div>
+      <div class="col-md-4 mb-4 d-flex">
+        <article class="post border rounded p-3 flex-fill">
+          <header>
+            <div>
+              <h2>{{ post['title'] }}</h2>
+              <div class="about text-muted small">
+                by
+                <a href="{{ url_for('profile.user_profile', username=post['username']) }}">
+                  {{ post['username'] }}
+                </a>
+                on {{ post['created'].strftime('%Y-%m-%d') }}
               </div>
-              {% if g.user['id'] == post['author_id'] %}
-                <a class="action btn btn-sm btn-outline-primary mt-2" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+            </div>
+            {% if g.user and g.user['id'] == post['author_id'] %}
+            <a class="action btn btn-sm btn-outline-primary mt-2"
+              href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+            {% endif %}
+          </header>
+
+          <p class="body mt-3">
+            <img src="{{ url_for('static', filename=post['body']) }}" class="image img-fluid rounded"/>
+          </p>
+
+          {% if post['tags'] %}
+          <p class="text-muted">Tags: {{ post['tags'] }}</p>
+          {% endif %}
+
+          <!-- Vote and report buttons -->
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <!-- Dislike -->
+            <form action="{{ url_for('blog.dislike_post', id=post['id']) }}" method="post" class="m-0">
+              <button type="submit" class="btn btn-danger btn-sm">👎</button>
+            </form>
+
+            <!-- Net Score -->
+            {% set net_score = post['likes'] - post['dislikes'] %}
+            <div class="text-center fw-bold">
+              {% if net_score > 0 %}
+                <span class="text-success">+{{ net_score }}</span>
+              {% elif net_score < 0 %}
+                <span class="text-danger">{{ net_score }}</span>
+              {% else %}
+                <span class="text-muted">0</span>
               {% endif %}
-            </header>
-            <p class="body mt-3">
-              <img src="{{ url_for('static', filename=post['body']) }}" class="image img-fluid rounded"/>
-            </p>
-          </article>
-        </div>
+            </div>
+
+            <!-- Like -->
+            <form action="{{ url_for('blog.like_post', id=post['id']) }}" method="post" class="m-0">
+              <button type="submit" class="btn btn-success btn-sm">👍</button>
+            </form>
+          </div>
+        </article>
+      </div>
       {% endfor %}
     </div>
   </div>
 
+  <!-- Pagination -->
   <div class="pagination d-flex justify-content-between align-items-center mt-4">
     {% if page > 1 %}
-      <a href="{{ url_for('index', page=page-1) }}" class="btn btn-outline-secondary">Previous</a>
+    <a href="{{ url_for('index', page=page-1) }}" class="btn btn-outline-secondary">Previous</a>
     {% else %}
-      <span></span>
+    <span></span>
     {% endif %}
 
     <span class="text-muted">Page {{ page }} of {{ total_pages }}</span>
 
     {% if page < total_pages %}
-      <a href="{{ url_for('index', page=page+1) }}" class="btn btn-outline-secondary">Next</a>
+    <a href="{{ url_for('index', page=page+1) }}" class="btn btn-outline-secondary">Next</a>
     {% else %}
-      <span></span>
+    <span></span>
     {% endif %}
   </div>
 </div>
+
+
 {% endblock %}

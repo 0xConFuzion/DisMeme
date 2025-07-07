@@ -8,8 +8,10 @@
   <form method="post" enctype="multipart/form-data">
     <label for="title">Title</label>
     <input name="title" id="title" value="{{ request.form['title'] }}" required>
-      <input type="file" name="file">
-      <input type="submit" value="Upload">
+    <input type="file" name="file">
+    <label for="tags">Tags (comma-separated):</label>
+    <input name="tags" id="tags">
+    <input type="submit" value="Upload">
   </form>
 
 {% endblock %}

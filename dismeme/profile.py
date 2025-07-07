@@ -1,21 +1,11 @@
 from flask import (
     Blueprint, render_template, abort, request, redirect, url_for, flash, g
 )
-
-import dismeme
 from dismeme.db import get_db
-import os
-from werkzeug.utils import secure_filename
+from dismeme.uploads import save_upload
 
 
 bp = Blueprint('profile', __name__, url_prefix='/user')
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-UPLOAD_FOLDER = os.getcwd() +'/dismeme/static/uploads/'
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @bp.route('/<username>')
 def user_profile(username):
@@ -56,17 +46,10 @@ def edit_profile():
     if request.method == 'POST':
         bio = request.form['bio']
         file = request.files.get('profile_pic')
-        error = None
-        filename = None
 
-        if file and file.filename != '':
-            if allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(UPLOAD_FOLDER, filename))
-            else:
-                error = 'Invalid image format. Allowed types: png, jpg, jpeg, gif.'
+        filename, error = save_upload(file)
 
-        if error is not None:
+        if error:
             flash(error)
         else:
             if filename:
@@ -83,7 +66,6 @@ def edit_profile():
             flash('Profile updated successfully.')
             return redirect(url_for('profile.user_profile', username=g.user['username']))
 
-    # For GET request, fetch current bio and profile_pic
     user = db.execute(
         'SELECT bio, profile_pic FROM user WHERE id = ?', (g.user['id'],)
     ).fetchone()

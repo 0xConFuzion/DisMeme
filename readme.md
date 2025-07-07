@@ -8,11 +8,9 @@ If you see this idk. probably not working yet.
 
 Todo :
 
-Admin Panel
+Admin Panel (Basic integration, needs features... lol )
 
 Discord integration
-
-9x9 index for images and pages 
 
 add email or discord auth to registration
 

@@ -1,12 +1,9 @@
 import os
 
-from flask import Flask
-from flask import send_from_directory
+from click import echo_via_pager
+from flask import Flask, send_from_directory
 
-from . import admin
-from . import profile
-
-UPLOAD_FOLDER = os.getcwd() +'/dismeme/static/uploads/'
+UPLOAD_FOLDER = os.getcwd() + '/dismeme/static/uploads/'
 
 def create_app(test_config=None):
     # create and configure the app
@@ -14,12 +11,13 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-        UPLOAD_FOLDER= UPLOAD_FOLDER,
+        UPLOAD_FOLDER=UPLOAD_FOLDER,
     )
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
+        echo_via_pager('Using config.py')
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
@@ -29,10 +27,6 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    app.register_blueprint(admin.bp)
-    app.register_blueprint(profile.bp)
-
 
     @app.route('/uploads/<name>')
     def download_file(name):
@@ -47,5 +41,11 @@ def create_app(test_config=None):
     from . import blog
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
+
+    from . import admin
+    app.register_blueprint(admin.bp)
+
+    from . import profile
+    app.register_blueprint(profile.bp)
 
     return app
