@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+  <h1>Edit Profile</h1>
+
+  <form method="post" enctype="multipart/form-data">
+    <label for="bio">Bio</label><br>
+    <textarea name="bio" id="bio" rows="5" cols="40">{{ user['bio'] }}</textarea><br><br>
+
+    <label for="profile_pic">Profile Picture</label><br>
+    {% if user['profile_pic'] %}
+      <img src="{{ url_for('static', filename='uploads/' + user['profile_pic']) }}" alt="Current profile picture" style="max-width: 150px; border-radius: 50%;"><br>
+    {% endif %}
+    <input type="file" name="profile_pic" id="profile_pic"><br><br>
+
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}

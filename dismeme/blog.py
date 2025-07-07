@@ -1,27 +1,46 @@
 import os
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, Flask
+    Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
 from dismeme.auth import login_required
 from dismeme.db import get_db
-import dismeme
+
 UPLOAD_FOLDER = os.getcwd() +'/dismeme/static/uploads/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+POSTS_PER_PAGE = 9
 
 bp = Blueprint('blog', __name__)
 
 @bp.route('/')
 def index():
+    page = request.args.get('page', 1, type=int)
     db = get_db()
+
+    total_posts = db.execute('SELECT COUNT(*) FROM post').fetchone()[0]
+    offset = (page - 1 ) * POSTS_PER_PAGE
+
     posts = db.execute(
-        'SELECT p.id, title, body, created, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
-        ' ORDER BY created DESC'
+        '''
+        SELECT p.id, title, body, created, author_id, username
+        FROM post p JOIN user u ON p.author_id = u.id
+        ORDER BY created DESC
+        LIMIT ? OFFSET ?
+        ''',
+        (POSTS_PER_PAGE, offset)
     ).fetchall()
-    return render_template('blog/index.html', posts=posts)
+
+    total_pages = (total_posts + POSTS_PER_PAGE - 1) // POSTS_PER_PAGE
+
+    return render_template(
+        'blog/index.html',
+        posts=posts,
+        page=page,
+        total_pages=total_pages
+    )
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required

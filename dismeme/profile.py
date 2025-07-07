@@ -1,0 +1,91 @@
+from flask import (
+    Blueprint, render_template, abort, request, redirect, url_for, flash, g
+)
+
+import dismeme
+from dismeme.db import get_db
+import os
+from werkzeug.utils import secure_filename
+
+
+bp = Blueprint('profile', __name__, url_prefix='/user')
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = os.getcwd() +'/dismeme/static/uploads/'
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@bp.route('/<username>')
+def user_profile(username):
+    db = get_db()
+    user = db.execute(
+        'SELECT id, username, bio, profile_pic FROM user WHERE username = ?', (username,)
+    ).fetchone()
+
+    if user is None:
+        abort(404, "User not found.")
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 6
+    offset = (page - 1) * per_page
+
+    posts = db.execute(
+        'SELECT id, title, body, created FROM post WHERE author_id = ? ORDER BY created DESC LIMIT ? OFFSET ?',
+        (user['id'], per_page, offset)
+    ).fetchall()
+
+    total_posts = db.execute(
+        'SELECT COUNT(*) FROM post WHERE author_id = ?', (user['id'],)
+    ).fetchone()[0]
+
+    total_pages = (total_posts + per_page - 1) // per_page
+
+    return render_template('/user/profile.html', user=user, posts=posts, page=page,
+        total_pages=total_pages)
+
+@bp.route('/edit', methods=('GET', 'POST'))
+def edit_profile():
+    if g.user is None:
+        flash('You need to be logged in to edit your profile.')
+        return redirect(url_for('auth.login'))
+
+    db = get_db()
+
+    if request.method == 'POST':
+        bio = request.form['bio']
+        file = request.files.get('profile_pic')
+        error = None
+        filename = None
+
+        if file and file.filename != '':
+            if allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(UPLOAD_FOLDER, filename))
+            else:
+                error = 'Invalid image format. Allowed types: png, jpg, jpeg, gif.'
+
+        if error is not None:
+            flash(error)
+        else:
+            if filename:
+                db.execute(
+                    'UPDATE user SET bio = ?, profile_pic = ? WHERE id = ?',
+                    (bio, filename, g.user['id'])
+                )
+            else:
+                db.execute(
+                    'UPDATE user SET bio = ? WHERE id = ?',
+                    (bio, g.user['id'])
+                )
+            db.commit()
+            flash('Profile updated successfully.')
+            return redirect(url_for('profile.user_profile', username=g.user['username']))
+
+    # For GET request, fetch current bio and profile_pic
+    user = db.execute(
+        'SELECT bio, profile_pic FROM user WHERE id = ?', (g.user['id'],)
+    ).fetchone()
+
+    return render_template('/user/edit_profile.html', user=user)
