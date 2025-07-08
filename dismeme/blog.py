@@ -10,7 +10,7 @@ from dismeme.auth import login_required
 from dismeme.db import get_db
 from dismeme.uploads import save_upload
 
-POSTS_PER_PAGE = 9
+
 
 bp = Blueprint('blog', __name__)
 
@@ -35,10 +35,11 @@ def get_post(id, check_author=True):
 @bp.route('/')
 def index():
     page = request.args.get('page', 1, type=int)
+    posts_per_page = current_app.config['POSTS_PER_PAGE']
     db = get_db()
 
     total_posts = db.execute('SELECT COUNT(*) FROM post').fetchone()[0]
-    offset = (page - 1) * POSTS_PER_PAGE
+    offset = (page - 1) * posts_per_page
 
     posts = db.execute(
         '''
@@ -47,10 +48,10 @@ def index():
         ORDER BY created DESC
         LIMIT ? OFFSET ?
         ''',
-        (POSTS_PER_PAGE, offset)
+        (posts_per_page, offset)
     ).fetchall()
 
-    total_pages = (total_posts + POSTS_PER_PAGE - 1) // POSTS_PER_PAGE
+    total_pages = (total_posts + posts_per_page - 1)
 
     return render_template(
         'blog/index.html',
