@@ -136,6 +136,10 @@
                               class="d-inline" onsubmit="return confirm('Delete this post?')">
                             <button type="submit" class="btn btn-sm btn-danger">Delete Post</button>
                         </form>
+                        <form action="{{ url_for('admin.delete_report', report_id=report['id']) }}" method="post"
+                              class="d-inline" onsubmit="return confirm('Delete this report?')">
+                            <button type="submit" class="btn btn-sm btn-secondary">Dismiss Report</button>
+                        </form>
                     </td>
                 </tr>
                 {% else %}

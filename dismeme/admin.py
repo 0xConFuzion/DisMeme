@@ -69,6 +69,7 @@ def delete_post(post_id):
             pass
 
     db.execute('DELETE FROM post WHERE id = ?', (post_id,))
+    db.execute('DELETE FROM report WHERE post_id = ?', (post_id,))
     db.commit()
     flash('Post deleted.')
     return redirect(url_for('admin.dashboard'))
@@ -108,4 +109,12 @@ def delete_user(user_id):
     db.execute('DELETE FROM user WHERE id = ?', (user_id,))
     db.commit()
     flash('User deleted.')
+    return redirect(url_for('admin.dashboard'))
+
+@bp.route('/report/<int:report_id>/delete', methods=['POST'])
+def delete_report(report_id):
+    db = get_db()
+    db.execute('DELETE FROM report WHERE id = ?', (report_id,))
+    db.commit()
+    flash('Report deleted.')
     return redirect(url_for('admin.dashboard'))
