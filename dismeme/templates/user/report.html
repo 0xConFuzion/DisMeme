@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1 class="mb-4">{% block title %}Report Post{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="container mt-4">
+    <form method="post" class="needs-validation" novalidate>
+      <div class="mb-3">
+        <label for="reason" class="form-label">Reason</label>
+        <input type="text" class="form-control" id="reason" name="reason" required>
+        <div class="invalid-feedback">
+          Please provide a reason.
+        </div>
+      </div>
+      <button type="submit" class="btn btn-danger">Submit Report</button>
+    </form>
+  </div>
+
+  <script>
+    // Bootstrap form validation
+    (() => {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+  </script>
+{% endblock %}

@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mt-2">
   <form method="post">
     <label for="username">Username</label>
     <input name="username" id="username" required>
@@ -12,4 +13,5 @@
     <input type="password" name="password" id="password" required>
     <input type="submit" value="Register">
   </form>
+</div>
 {% endblock %}

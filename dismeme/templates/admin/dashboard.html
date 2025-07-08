@@ -1,34 +1,153 @@
 {% extends 'base.html' %}
-{% block title %}Admin{% endblock %}
+
+{% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h1>Admin Dashboard</h1>
+<div class="container mt-5">
+    <h2 class="mb-4">Admin Dashboard</h2>
 
-<h2>Users</h2>
-<table class="table table-bordered">
-  <thead><tr><th>ID</th><th>Username</th><th>Admin</th></tr></thead>
-  <tbody>
-    {% for user in users %}
-      <tr>
-        <td>{{ user['id'] }}</td>
-        <td>{{ user['username'] }}</td>
-        <td>{{ '✅' if user['is_admin'] else '❌' }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button"
+                    role="tab">
+                Users
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button"
+                    role="tab">
+                Posts
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button"
+                    role="tab">
+                Reports
+            </button>
+        </li>
+    </ul>
 
-<h2>Posts</h2>
-<table class="table table-striped">
-  <thead><tr><th>ID</th><th>Title</th><th>Created</th></tr></thead>
-  <tbody>
-    {% for post in posts %}
-      <tr>
-        <td>{{ post['id'] }}</td>
-        <td>{{ post['title'] }}</td>
-        <td>{{ post['created'] }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    <!-- Tab Content -->
+    <div class="tab-content mt-4" id="adminTabsContent">
+        <!-- Users Tab -->
+        <div class="tab-pane fade show active" id="users" role="tabpanel">
+            <h4>All Users</h4>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Admin</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user['username'] }}</td>
+                    <td>{{ user['email'] }}</td>
+                    <td>{{ 'Yes' if user['is_admin'] else 'No' }}</td>
+                    <td>
+                        <form action="{{ url_for('admin.delete_user', user_id=user['id']) }}" method="post"
+                              onsubmit="return confirm('Delete this user?')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Posts Tab -->
+        <div class="tab-pane fade" id="posts" role="tabpanel">
+            <h4>All Posts</h4>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>{{ post['title'] }}</td>
+                    <td>{{ post['username'] }}</td>
+                    <td>{{ post['created'].strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_post', post_id=post['id']) }}" class="btn btn-sm btn-primary">Edit</a>
+                        <form action="{{ url_for('admin.delete_post', post_id=post['id']) }}" method="post"
+                              class="d-inline" onsubmit="return confirm('Delete this post?')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination for posts -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.dashboard', page=page-1) }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+                    </li>
+
+                    {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.dashboard', page=page+1) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        <!-- Reports Tab -->
+        <div class="tab-pane fade" id="reports" role="tabpanel">
+            <h4>Reported Posts</h4>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Post Title</th>
+                    <th>Reported By</th>
+                    <th>Reason</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report['title'] }}</td>
+                    <td>{{ report['username'] }}</td>
+                    <td>{{ report['reason'] }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_post', post_id=report['post_id']) }}"
+                           class="btn btn-sm btn-primary">Edit Post</a>
+                        <form action="{{ url_for('admin.delete_post', post_id=report['post_id']) }}" method="post"
+                              class="d-inline" onsubmit="return confirm('Delete this post?')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete Post</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No reports found.</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+</div>
 {% endblock %}

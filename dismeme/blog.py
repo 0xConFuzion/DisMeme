@@ -208,15 +208,35 @@ def dislike_post(id):
     return redirect(request.referrer or url_for('blog.index'))
 
 
-@bp.route('/<int:id>/report', methods=['POST'])
+@bp.route('/<int:id>/report', methods=['POST', 'GET'])
 @login_required
-def report_post(id):
-    reason = request.form.get('reason', 'No reason given')
+def report(id):
     db = get_db()
-    db.execute(
-        'INSERT INTO report (post_id, user_id, reason) VALUES (?, ?, ?)',
-        (id, g.user['id'], reason)
-    )
-    db.commit()
-    flash('Post reported.')
-    return redirect(request.referrer or url_for('blog.index'))
+
+    if request.method == 'POST':
+        reason = request.form['reason']
+        if not reason:
+            reason = 'No reason given.'
+
+        # Check if this user has already reported this post
+        existing = db.execute(
+            'SELECT id FROM report WHERE post_id = ? AND user_id = ?',
+            (id, g.user['id'])
+        ).fetchone()
+
+        if existing:
+            flash('You have already reported this post.')
+            return redirect(url_for('index'))
+
+        # No previous report found; proceed to insert
+        db.execute(
+            'INSERT INTO report (post_id, user_id, reason) VALUES (?, ?, ?)',
+            (id, g.user['id'], reason)
+        )
+        db.commit()
+
+        flash('Post reported.')
+        return redirect(url_for('index'))
+
+    return render_template('user/report.html')
+

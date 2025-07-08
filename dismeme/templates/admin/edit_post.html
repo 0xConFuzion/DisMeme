@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Post</h2>
+
+    <form method="post">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input name="title" id="title" class="form-control" value="{{ post.title }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="body" class="form-label">Image URL (relative)</label>
+            <input name="body" id="body" class="form-control" value="{{ post.body }}" required>
+            <div class="form-text">Do not edit this unless necessary. It should be the relative path to the image.</div>
+        </div>
+
+        <button class="btn btn-success" type="submit">Update</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.dashboard') }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}
