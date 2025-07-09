@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, send_from_directory
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(),'/dismeme/static/uploads/')
+UPLOAD_FOLDER = os.path.join(os.getcwd(),'dismeme/static/uploads/')
 
 def create_app(test_config=None):
     # create and configure the app

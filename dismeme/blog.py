@@ -51,7 +51,7 @@ def index():
         (posts_per_page, offset)
     ).fetchall()
 
-    total_pages = (total_posts + posts_per_page - 1)
+    total_pages = (total_posts + posts_per_page - 1) // posts_per_page
 
     return render_template(
         'blog/index.html',

@@ -71,3 +71,20 @@ def edit_profile():
     ).fetchone()
 
     return render_template('/user/edit_profile.html', user=user)
+
+@bp.route('/<int:id>/delete', methods=('POST',))
+def delete(id):
+    if request.method == 'POST':
+        if g.user is None:
+            return redirect(url_for('index'))
+
+        if g.user['id'] == id:
+            db = get_db()
+            db.execute('DELETE FROM user WHERE id = ?', (g.user['id'],))
+            db.commit()
+            flash('User Deleted.')
+            return redirect(url_for('auth.logout'))
+        else:
+            abort(403)
+
+    return redirect(url_for('index'))

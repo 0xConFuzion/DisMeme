@@ -2,7 +2,7 @@
 SECRET_KEY = 'dev'
 
 # Path to the SQLite database file inside instance folder
-DATABASE = 'flaskr.sqlite'
+DATABASE = 'dismeme.sqlite'
 
 # Folder where uploads will be saved (absolute or relative path)
 UPLOAD_FOLDER = '/home/Fuzion/PycharmProjects/neonhaze/dismeme/static/uploads'
