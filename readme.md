@@ -14,7 +14,7 @@ Discord integration
 
 add email or discord auth to registration
 
-Like / unlike a post.
+
 
 Tags. Clicking a tag shows all the posts with that tag.
 
